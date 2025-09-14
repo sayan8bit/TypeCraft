@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TypeCraft</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom Tailwind config for styling -->
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "slate-900": "#0f172a",
+              "slate-800": "#1e293b",
+              "slate-700": "#334155",
+              "slate-50": "#f8fafc",
+              "slate-100": "#f1f5f9",
+              "slate-300": "#cbd5e1",
+              "slate-400": "#94a3b8",
+              "slate-600": "#475569",
+              "amber-400": "#fde047",
+              "amber-500": "#f59e0b",
+              "amber-600": "#d97706",
+              "green-400": "#4ade80",
+              "red-400": "#f87171",
+              "red-600": "#dc2626",
+            },
+            keyframes: {
+              blink: {
+                to: { visibility: "hidden" },
+              },
+            },
+            animation: {
+              blink: "blink 1s steps(2, start) infinite",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .prose span {
+        line-height: 1.6;
+      }
+    </style>
+  </head>
+  <body class="transition-colors duration-300 bg-slate-900 dark:bg-slate-50">
+    <div
+      id="app"
+      class="min-h-screen p-6 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-700 dark:from-slate-50 dark:via-white/5 dark:to-white/10 transition-colors duration-300"
+    >
+      <div class="max-w-5xl mx-auto">
+        <header class="flex items-center justify-between mb-6">
+          <div>
+            <h1
+              class="text-2xl sm:text-3xl font-extrabold text-white dark:text-slate-900"
+            >
+              TypeCraft
+              <span class="text-amber-400 font-medium">— Pro Typing Test</span>
+            </h1>
+            <p class="mt-1 text-sm text-slate-300 dark:text-slate-600">
+              Premium look, pro metrics. Built with accessibility and
+              performance in mind.
+            </p>
+          </div>
+          <div class="flex items-center gap-3">
+            <div
+              class="flex items-center gap-2 bg-white/5 px-3 py-2 rounded-2xl"
+            >
+              <span class="text-slate-200 text-xs dark:text-slate-600"
+                >Mode</span
+              >
+              <select
+                id="mode-select"
+                class="bg-transparent outline-none text-sm text-white dark:text-slate-900"
+              >
+                <option
+                  value="time:15"
+                  class="bg-slate-800 dark:bg-white/90 text-white dark:text-slate-900"
+                >
+                  15s
+                </option>
+                <option
+                  value="time:30"
+                  class="bg-slate-800 dark:bg-white/90 text-white dark:text-slate-900"
+                >
+                  30s
+                </option>
+                <option
+                  value="time:60"
+                  class="bg-slate-800 dark:bg-white/90 text-white dark:text-slate-900"
+                >
+                  60s
+                </option>
+                <option
+                  value="words:15"
+                  class="bg-slate-800 dark:bg-white/90 text-white dark:text-slate-900"
+                >
+                  15 words
+                </option>
+                <option
+                  value="words:30"
+                  class="bg-slate-800 dark:bg-white/90 text-white dark:text-slate-900"
+                >
+                  30 words
+                </option>
+                <option
+                  value="words:50"
+                  class="bg-slate-800 dark:bg-white/90 text-white dark:text-slate-900"
+                >
+                  50 words
+                </option>
+              </select>
+            </div>
+            <button
+              id="restart-button"
+              class="px-3 py-2 bg-amber-500 hover:bg-amber-600 text-slate-900 rounded-lg font-semibold"
+            >
+              Restart
+            </button>
+            <button
+              id="theme-toggle"
+              class="px-3 py-2 bg-white/5 rounded-lg text-white dark:text-slate-900"
+            >
+              Light
+            </button>
+          </div>
+        </header>
+
+        <main class="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <section class="md:col-span-2 bg-white/5 rounded-2xl p-6 shadow-lg">
+            <div class="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h2
+                  class="text-lg font-semibold text-white dark:text-slate-900"
+                >
+                  Test
+                </h2>
+                <p class="text-sm text-slate-300 dark:text-slate-600">
+                  Type the text below — your performance updates live.
+                </p>
+              </div>
+              <div class="text-right">
+                <div class="text-sm text-slate-300 dark:text-slate-600">
+                  Time
+                </div>
+                <div
+                  id="time-display"
+                  class="text-2xl font-mono font-bold text-amber-400"
+                >
+                  0:00
+                </div>
+              </div>
+            </div>
+
+            <div
+              class="relative p-4 rounded-lg bg-gradient-to-b from-white/2 to-white/1 border border-white/5"
+              style="min-height: 160px"
+            >
+              <div
+                id="text-display"
+                class="prose max-w-none text-white dark:text-slate-900"
+                style="font-size: 18px"
+                aria-live="polite"
+              ></div>
+              <textarea
+                id="typing-input"
+                class="absolute inset-0 opacity-0 pointer-events-none"
+                aria-label="Hidden typing input"
+                autocapitalize="off"
+                autocorrect="off"
+                spellcheck="false"
+              ></textarea>
+            </div>
+
+            <div class="mt-4 flex items-center justify-between gap-4">
+              <div class="flex items-center gap-3">
+                <div class="text-sm text-slate-300 dark:text-slate-600">
+                  Progress
+                </div>
+                <div class="w-64 h-2 bg-white/5 rounded-full overflow-hidden">
+                  <div
+                    id="progress-bar"
+                    class="h-full bg-amber-400 rounded-full transition-all"
+                    style="width: 0%"
+                  ></div>
+                </div>
+              </div>
+              <div class="flex items-center gap-6">
+                <div class="text-center">
+                  <div class="text-xs text-slate-300 dark:text-slate-600">
+                    WPM
+                  </div>
+                  <div
+                    id="wpm-display"
+                    class="text-lg font-mono font-bold text-white dark:text-slate-900"
+                  >
+                    0
+                  </div>
+                </div>
+                <div class="text-center">
+                  <div class="text-xs text-slate-300 dark:text-slate-600">
+                    Accuracy
+                  </div>
+                  <div
+                    id="accuracy-display"
+                    class="text-lg font-mono font-bold text-white dark:text-slate-900"
+                  >
+                    100%
+                  </div>
+                </div>
+                <div class="text-center">
+                  <div class="text-xs text-slate-300 dark:text-slate-600">
+                    CPM
+                  </div>
+                  <div
+                    id="cpm-display"
+                    class="text-lg font-mono font-bold text-white dark:text-slate-900"
+                  >
+                    0
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <aside class="flex flex-col gap-4">
+            <div class="bg-white/5 rounded-2xl p-4 shadow-lg">
+              <div class="flex items-center justify-between">
+                <h3
+                  class="text-sm font-semibold text-white dark:text-slate-900"
+                >
+                  Controls
+                </h3>
+                <div class="text-xs text-slate-300 dark:text-slate-600">
+                  Shortcuts: Esc reset • Ctrl/Cmd+R
+                </div>
+              </div>
+              <div class="mt-3 flex flex-col gap-3">
+                <div class="flex items-center gap-2">
+                  <label
+                    for="font-size-range"
+                    class="text-sm text-slate-300 dark:text-slate-600"
+                    >Font size</label
+                  >
+                  <input
+                    id="font-size-range"
+                    type="range"
+                    min="14"
+                    max="24"
+                    value="18"
+                  />
+                </div>
+                <div class="flex items-center gap-2">
+                  <input
+                    id="caret-toggle"
+                    type="checkbox"
+                    checked="true"
+                    class="form-checkbox"
+                  />
+                  <label
+                    for="caret-toggle"
+                    class="text-sm text-slate-300 dark:text-slate-600"
+                    >Show caret</label
+                  >
+                </div>
+                <button
+                  id="new-passage-button"
+                  class="mt-2 w-full py-2 bg-slate-600 rounded-lg text-sm text-white"
+                >
+                  New passage
+                </button>
+              </div>
+            </div>
+
+            <div
+              class="bg-white/5 rounded-2xl p-4 shadow-lg flex-1 flex flex-col"
+            >
+              <h3 class="text-sm font-semibold text-white dark:text-slate-900">
+                History
+              </h3>
+              <div
+                id="history-list"
+                class="mt-3 text-slate-300 text-sm flex-1 overflow-auto dark:text-slate-600"
+              >
+                <div class="text-xs opacity-80">
+                  No history yet — take a test to record scores.
+                </div>
+              </div>
+              <div class="mt-3 flex gap-2">
+                <button
+                  id="clear-history-button"
+                  class="flex-1 py-2 rounded bg-red-600 text-white text-sm"
+                >
+                  Clear
+                </button>
+                <button
+                  id="export-history-button"
+                  class="py-2 px-3 rounded bg-amber-500 text-slate-900 text-sm"
+                >
+                  Export
+                </button>
+              </div>
+            </div>
+          </aside>
+        </main>
+
+        <!-- Results Modal -->
+        <div
+          id="results-modal"
+          role="dialog"
+          aria-modal="true"
+          class="fixed inset-0 z-50 flex items-center justify-center p-6 hidden"
+        >
+          <div class="absolute inset-0 bg-black/60"></div>
+          <div
+            class="relative max-w-xl w-full bg-white/6 rounded-2xl p-6 text-white shadow-2xl backdrop-blur"
+          >
+            <h2 class="text-2xl font-bold dark:text-slate-900">Results</h2>
+            <p class="text-slate-300 mt-2 dark:text-slate-600">
+              Nice! Here's your test summary.
+            </p>
+            <div class="mt-4 grid grid-cols-2 gap-4">
+              <div class="bg-white/3 rounded p-3">
+                <div class="text-xs text-slate-300 dark:text-slate-600">
+                  WPM
+                </div>
+                <div
+                  id="result-wpm"
+                  class="text-xl font-bold text-white dark:text-slate-900"
+                >
+                  0
+                </div>
+              </div>
+              <div class="bg-white/3 rounded p-3">
+                <div class="text-xs text-slate-300 dark:text-slate-600">
+                  Accuracy
+                </div>
+                <div
+                  id="result-accuracy"
+                  class="text-xl font-bold text-white dark:text-slate-900"
+                >
+                  0%
+                </div>
+              </div>
+              <div class="bg-white/3 rounded p-3">
+                <div class="text-xs text-slate-300 dark:text-slate-600">
+                  CPM
+                </div>
+                <div
+                  id="result-cpm"
+                  class="text-xl font-bold text-white dark:text-slate-900"
+                >
+                  0
+                </div>
+              </div>
+              <div class="bg-white/3 rounded p-3">
+                <div class="text-xs text-slate-300 dark:text-slate-600">
+                  Typed chars
+                </div>
+                <div
+                  id="result-typed-chars"
+                  class="text-xl font-bold text-white dark:text-slate-900"
+                >
+                  0
+                </div>
+              </div>
+            </div>
+            <div class="mt-6 flex gap-3 justify-end">
+              <button
+                id="try-again-button"
+                class="px-4 py-2 rounded bg-amber-400 text-slate-900 font-semibold"
+              >
+                Try Again
+              </button>
+              <button
+                id="close-modal-button"
+                class="px-4 py-2 rounded bg-white/5 text-white dark:text-slate-900"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <footer
+          class="mt-8 text-center text-slate-400 text-sm dark:text-slate-600"
+        >
+          Made with care • Accessible • Fast — Customize freely
+        </footer>
+      </div>
+    </div>
+
+    <script>
+      const SAMPLE_PASSAGE =
+        "The quick brown fox jumps over the lazy dog. This sentence is a pangram, which means it contains every letter of the alphabet. Typing tests often use such phrases to ensure all keys are tested. Practice makes perfect, so keep going!";
+      const WORD_BANK =
+        `a about above add after again against all an and any are around as at back be because been before being below between both but by can cannot come could did do does doing done down during each eight either end even ever every first five for four from get give go good had has have he help her here him his how however if in into is it just know less let life like live look lose make man many may me mean might more most much must my new no not now of off on one only open or our out over part people play put read right run say see she she should show so some still such take tell ten than that the their them then there these they thing think third this three through time to too top try two under up upon us use very want was way we well were what when where which while who whom why will with word work world would write year you your zero`.split(
+          " "
+        );
+
+      const DEFAULT_MODE = { type: "time", value: 30 };
+
+      // Global state object
+      const state = {
+        theme: localStorage.getItem("tt_theme") || "dark",
+        mode: JSON.parse(localStorage.getItem("tt_mode")) || DEFAULT_MODE,
+        fontSize: Number(localStorage.getItem("tt_fontSize")) || 18,
+        showCaret: localStorage.getItem("tt_showCaret") !== "false",
+        text: sampleWords(80),
+        typed: "",
+        startedAt: null,
+        timeLeft: DEFAULT_MODE.type === "time" ? DEFAULT_MODE.value : 0,
+        running: false,
+        finished: false,
+        history: JSON.parse(localStorage.getItem("tt_history") || "[]"),
+      };
+
+      // DOM elements
+      const elements = {};
+
+      function getElements() {
+        elements.app = document.getElementById("app");
+        elements.modeSelect = document.getElementById("mode-select");
+        elements.themeToggle = document.getElementById("theme-toggle");
+        elements.restartButton = document.getElementById("restart-button");
+        elements.timeDisplay = document.getElementById("time-display");
+        elements.textDisplay = document.getElementById("text-display");
+        elements.typingInput = document.getElementById("typing-input");
+        elements.progressBar = document.getElementById("progress-bar");
+        elements.wpmDisplay = document.getElementById("wpm-display");
+        elements.accuracyDisplay = document.getElementById("accuracy-display");
+        elements.cpmDisplay = document.getElementById("cpm-display");
+        elements.fontSizeRange = document.getElementById("font-size-range");
+        elements.caretToggle = document.getElementById("caret-toggle");
+        elements.newPassageButton =
+          document.getElementById("new-passage-button");
+        elements.historyList = document.getElementById("history-list");
+        elements.clearHistoryButton = document.getElementById(
+          "clear-history-button"
+        );
+        elements.exportHistoryButton = document.getElementById(
+          "export-history-button"
+        );
+        elements.resultsModal = document.getElementById("results-modal");
+        elements.resultWpm = document.getElementById("result-wpm");
+        elements.resultAccuracy = document.getElementById("result-accuracy");
+        elements.resultCpm = document.getElementById("result-cpm");
+        elements.resultTypedChars =
+          document.getElementById("result-typed-chars");
+        elements.tryAgainButton = document.getElementById("try-again-button");
+        elements.closeModalButton =
+          document.getElementById("close-modal-button");
+      }
+
+      // Utility functions
+      function sampleWords(count = 50) {
+        const out = [];
+        // Randomly choose between a full passage and random words
+        if (Math.random() < 0.5) {
+          return SAMPLE_PASSAGE;
+        } else {
+          for (let i = 0; i < count; i++) {
+            out.push(WORD_BANK[Math.floor(Math.random() * WORD_BANK.length)]);
+          }
+          return out.join(" ");
+        }
+      }
+
+      function clamp(n, a, b) {
+        return Math.min(Math.max(n, a), b);
+      }
+
+      function formatTime(t) {
+        const s = Math.max(0, Math.round(t));
+        const mm = Math.floor(s / 60);
+        const ss = s % 60;
+        return `${mm}:${String(ss).padStart(2, "0")}`;
+      }
+
+      function persistState() {
+        localStorage.setItem("tt_theme", state.theme);
+        localStorage.setItem("tt_mode", JSON.stringify(state.mode));
+        localStorage.setItem("tt_fontSize", String(state.fontSize));
+        localStorage.setItem("tt_showCaret", String(state.showCaret));
+        localStorage.setItem("tt_history", JSON.stringify(state.history));
+      }
+
+      // Rendering and update functions
+      let animationFrameId = null;
+
+      function render() {
+        // Update mode selection
+        elements.modeSelect.value = `${state.mode.type}:${state.mode.value}`;
+
+        // Update theme
+        document.documentElement.classList.toggle(
+          "dark",
+          state.theme === "dark"
+        );
+        elements.themeToggle.textContent =
+          state.theme === "dark" ? "Light" : "Dark";
+
+        // Update time display
+        if (state.mode.type === "time") {
+          elements.timeDisplay.textContent = formatTime(state.timeLeft);
+        } else {
+          const typedWordsCount = state.typed
+            .trim()
+            .split(/\s+/)
+            .filter(Boolean).length;
+          elements.timeDisplay.textContent = `${typedWordsCount}/${state.mode.value} words`;
+        }
+
+        // Update text display
+        let textHtml = "";
+        for (let i = 0; i < state.text.length; i++) {
+          const ch = state.text[i];
+          const typedCh = state.typed[i];
+          let cls = "";
+          if (i < state.typed.length) {
+            cls =
+              typedCh === ch ? "text-green-400" : "text-red-400 bg-red-100/10";
+          } else {
+            cls = "text-slate-400";
+          }
+          const isCaret =
+            state.showCaret && i === state.typed.length && state.running;
+          const caretClass = isCaret ? "relative" : "";
+
+          textHtml += `<span class="whitespace-pre-wrap ${cls} ${caretClass}">${ch}${
+            isCaret
+              ? '<span aria-hidden class="absolute -bottom-1 left-0 w-px h-[1.25em] bg-amber-400 animate-blink"></span>'
+              : ""
+          }</span>`;
+        }
+        elements.textDisplay.innerHTML = textHtml;
+        elements.textDisplay.style.fontSize = `${state.fontSize}px`;
+
+        // Update stats
+        const correctChars = Array.from(state.typed).filter(
+          (char, i) => char === state.text[i]
+        ).length;
+        const accuracy = state.typed.length
+          ? Math.round((correctChars / state.typed.length) * 100)
+          : 100;
+        const elapsedSeconds = state.startedAt
+          ? Math.max(0, (Date.now() - state.startedAt) / 1000)
+          : 0;
+        const wpm = Math.round(correctChars / 5 / (elapsedSeconds / 60) || 0);
+        const cpm = Math.round(correctChars / (elapsedSeconds / 60) || 0);
+
+        elements.wpmDisplay.textContent = wpm;
+        elements.accuracyDisplay.textContent = `${accuracy}%`;
+        elements.cpmDisplay.textContent = cpm;
+
+        // Update progress bar
+        const totalChars = state.text.length;
+        const progress = clamp((state.typed.length / totalChars) * 100, 0, 100);
+        elements.progressBar.style.width = `${progress}%`;
+
+        // Update controls
+        elements.fontSizeRange.value = state.fontSize;
+        elements.caretToggle.checked = state.showCaret;
+
+        // Update history list
+        if (state.history.length === 0) {
+          elements.historyList.innerHTML =
+            '<div class="text-xs opacity-80">No history yet — take a test to record scores.</div>';
+        } else {
+          elements.historyList.innerHTML = state.history
+            .map(
+              (h) => `
+                    <li class="flex items-center justify-between bg-white/3 p-2 rounded">
+                        <div class="text-xs">
+                            <div class="font-medium">${h.wpm} WPM • ${
+                h.accuracy
+              }%</div>
+                            <div class="text-xs text-slate-300 dark:text-slate-600">${new Date(
+                              h.date
+                            ).toLocaleString()}</div>
+                        </div>
+                        <div class="text-xs text-slate-400 dark:text-slate-600">${
+                          h.duration
+                        }s</div>
+                    </li>
+                `
+            )
+            .join("");
+        }
+
+        // Update modal visibility
+        elements.resultsModal.classList.toggle("hidden", !state.finished);
+        if (state.finished) {
+          elements.resultWpm.textContent = wpm;
+          elements.resultAccuracy.textContent = `${accuracy}%`;
+          elements.resultCpm.textContent = cpm;
+          elements.resultTypedChars.textContent = state.typed.length;
+        }
+      }
+
+      // Timer/animation loop
+      function startTimer() {
+        if (state.running) return;
+        state.running = true;
+        state.startedAt = Date.now();
+        if (state.mode.type === "time") {
+          state.timeLeft = state.mode.value;
+        }
+
+        let lastTick = performance.now();
+        function tick(now) {
+          if (!state.running) {
+            cancelAnimationFrame(animationFrameId);
+            return;
+          }
+          const dt = (now - lastTick) / 1000;
+          lastTick = now;
+          if (state.mode.type === "time") {
+            state.timeLeft -= dt;
+            if (state.timeLeft <= 0) {
+              endTest();
+              state.timeLeft = 0;
+            }
+          }
+          render(); // Re-render on each tick
+          animationFrameId = requestAnimationFrame(tick);
+        }
+        animationFrameId = requestAnimationFrame(tick);
+      }
+
+      function endTest() {
+        if (state.finished) return;
+        state.running = false;
+        state.finished = true;
+        const correctChars = Array.from(state.typed).filter(
+          (char, i) => char === state.text[i]
+        ).length;
+        const elapsedSeconds = state.startedAt
+          ? Math.max(0, (Date.now() - state.startedAt) / 1000)
+          : 0;
+        const wpm = Math.round(correctChars / 5 / (elapsedSeconds / 60) || 0);
+        const cpm = Math.round(correctChars / (elapsedSeconds / 60) || 0);
+
+        const score = {
+          id: Date.now(),
+          date: new Date().toISOString(),
+          wpm,
+          cpm,
+          accuracy: state.typed.length
+            ? Math.round((correctChars / state.typed.length) * 100)
+            : 100,
+          typedLength: state.typed.length,
+          duration: Math.round(elapsedSeconds),
+        };
+        state.history = [score, ...state.history].slice(0, 50);
+        persistState();
+        render();
+      }
+
+      function resetTest() {
+        state.running = false;
+        state.startedAt = null;
+        state.typed = "";
+        state.finished = false;
+        state.text = sampleWords(80);
+        state.timeLeft = state.mode.type === "time" ? state.mode.value : 0;
+        elements.typingInput.value = "";
+        render();
+        elements.typingInput.focus();
+      }
+
+      // Event listeners
+      function addEventListeners() {
+        // Element listeners
+        elements.typingInput.addEventListener("input", (e) => {
+          // If the test is finished, do nothing
+          if (state.finished) {
+            return;
+          }
+          const value = e.target.value;
+          if (!state.running && value.length > 0) {
+            startTimer();
+          }
+
+          if (state.mode.type === "words") {
+            const typedWords = value.trim().split(/\s+/).filter(Boolean);
+            if (typedWords.length >= state.mode.value) {
+              const nthWordChars = state.text
+                .split(" ")
+                .slice(0, state.mode.value)
+                .join(" ");
+              state.typed = nthWordChars;
+              endTest();
+              return;
+            }
+          }
+
+          state.typed = value;
+
+          if (value.length > state.text.length - 5) {
+            state.text += " " + sampleWords(30);
+          }
+          render();
+        });
+
+        elements.modeSelect.addEventListener("change", (e) => {
+          const [type, value] = e.target.value.split(":");
+          state.mode = { type, value: Number(value) };
+          state.timeLeft = state.mode.type === "time" ? state.mode.value : 0;
+          persistState();
+          resetTest();
+        });
+
+        elements.themeToggle.addEventListener("click", () => {
+          state.theme = state.theme === "dark" ? "light" : "dark";
+          persistState();
+          render();
+        });
+
+        elements.restartButton.addEventListener("click", resetTest);
+
+        elements.fontSizeRange.addEventListener("input", (e) => {
+          state.fontSize = Number(e.target.value);
+          persistState();
+          render();
+        });
+
+        elements.caretToggle.addEventListener("change", (e) => {
+          state.showCaret = e.target.checked;
+          persistState();
+          render();
+        });
+
+        elements.newPassageButton.addEventListener("click", () => {
+          state.text = sampleWords(80);
+          state.typed = "";
+          state.running = false;
+          state.startedAt = null;
+          state.finished = false;
+          state.timeLeft = state.mode.type === "time" ? state.mode.value : 0;
+          elements.typingInput.value = "";
+          render();
+          elements.typingInput.focus();
+        });
+
+        elements.clearHistoryButton.addEventListener("click", () => {
+          state.history = [];
+          persistState();
+          render();
+        });
+
+        elements.exportHistoryButton.addEventListener("click", () => {
+          document.execCommand("copy");
+        });
+
+        elements.resultsModal.addEventListener("click", (e) => {
+          if (
+            e.target.id === "results-modal" ||
+            e.target.closest("#close-modal-button")
+          ) {
+            state.finished = false;
+            render();
+          }
+        });
+
+        elements.tryAgainButton.addEventListener("click", () => {
+          state.finished = false;
+          resetTest();
+        });
+
+        // Keep the typing input focused when the test is running.
+        elements.typingInput.addEventListener("blur", () => {
+          if (state.running) {
+            elements.typingInput.focus();
+          }
+        });
+      }
+
+      // Initial setup
+      document.addEventListener("DOMContentLoaded", () => {
+        getElements();
+        addEventListeners();
+        render();
+        elements.typingInput.focus();
+      });
+
+      // Global keydown listener
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          resetTest();
+        }
+        if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r") {
+          e.preventDefault();
+          resetTest();
+        }
+      });
+    </script>
+  </body>
+</html>
